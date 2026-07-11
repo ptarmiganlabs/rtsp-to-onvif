@@ -9,6 +9,11 @@
     "name": "Piotr Kula",
     "email": "rtsp2onvif@kula.email"
   },
+  "maintainer": {
+    "git" : "https://github.com/ptarmiganlabs/rtsp-to-onvif",
+    "name": "Göran Sander",
+    "url": "https://github.com/mountaindude"
+  },
   "forked": {
     "git" : "https://github.com/daniela-hase/onvif-server",
     "name": "Daniela Hasenbring",

@@ -1,2 +1,2 @@
 #! /bin/bash
-docker build -t mountaindude/rtsp-to-onvif:latest .
+docker build -t ptarmiganlabs/rtsp-to-onvif:latest .

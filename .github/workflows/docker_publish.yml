@@ -32,8 +32,8 @@ jobs:
         with:
           context: .
           tags: |
-            mountaindude/rtsp-to-onvif:0.1.${{ github.run_number }}
-            mountaindude/rtsp-to-onvif:latest
-            ghcr.io/mountaindude/rtsp-to-onvif:0.1.${{ github.run_number }}
-            ghcr.io/mountaindude/rtsp-to-onvif:latest
+            ptarmiganlabs/rtsp-to-onvif:0.1.${{ github.run_number }}
+            ptarmiganlabs/rtsp-to-onvif:latest
+            ghcr.io/ptarmiganlabs/rtsp-to-onvif:0.1.${{ github.run_number }}
+            ghcr.io/ptarmiganlabs/rtsp-to-onvif:latest
           outputs: ${{ github.event_name == 'pull_request' && 'type=cacheonly' || 'type=registry,push=true' }}

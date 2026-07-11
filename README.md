@@ -16,7 +16,7 @@ This fork was created to:
 - **Fix code bugs** (process.exit, this.listen binding, shell injection hardening)
 - **Improve Docker setup** (pinned Alpine version, HEALTHCHECK, compose build directive)
 - **Fix CI** (dependabot config, workflow capitalization bug)
-- **Build and publish new Docker images** under `mountaindude/rtsp-to-onvif` (Docker Hub + GitHub Container Registry)
+- **Build and publish new Docker images** under `ptarmiganlabs/rtsp-to-onvif` (Docker Hub + GitHub Container Registry)
 - **Long term maintenance** (Make it easy to update dependencies, rebuild, and publish new images)
 
 ## Security audit results
@@ -125,8 +125,8 @@ onvif:
 1. Download the files you need and configure
    ```bash
    mkdir rtsp-to-onvif && cd rtsp-to-onvif
-   wget https://raw.githubusercontent.com/mountaindude/rtsp-to-onvif/refs/heads/main/compose.yaml
-   wget https://raw.githubusercontent.com/mountaindude/rtsp-to-onvif/refs/heads/main/config.example.yaml
+   wget https://raw.githubusercontent.com/ptarmiganlabs/rtsp-to-onvif/refs/heads/main/compose.yaml
+   wget https://raw.githubusercontent.com/ptarmiganlabs/rtsp-to-onvif/refs/heads/main/config.example.yaml
    cp config.example.yaml config.yaml
    nano config.yaml    # edit with your camera details
    ```
@@ -146,7 +146,7 @@ Watch the logs for:
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/mountaindude/rtsp-to-onvif.git
+   git clone https://github.com/ptarmiganlabs/rtsp-to-onvif.git
    cd rtsp-to-onvif
    ```
 
@@ -163,10 +163,10 @@ Watch the logs for:
 
    Or build manually then run:
    ```bash
-   docker build -t mountaindude/rtsp-to-onvif:latest .
+   docker build -t ptarmiganlabs/rtsp-to-onvif:latest .
    # Or use the included build script:
    ./build-docker.sh
-   docker run --network host --cap-add NET_ADMIN -v $(pwd)/config.yaml:/onvif.yaml mountaindude/rtsp-to-onvif:latest
+   docker run --network host --cap-add NET_ADMIN -v $(pwd)/config.yaml:/onvif.yaml ptarmiganlabs/rtsp-to-onvif:latest
    ```
 
 Watch the logs for:
@@ -271,8 +271,8 @@ Images are published to two registries:
 
 | Registry | Image |
 |---|---|
-| Docker Hub | `mountaindude/rtsp-to-onvif:latest` |
-| GitHub Container Registry | `ghcr.io/mountaindude/rtsp-to-onvif:latest` |
+| Docker Hub | `ptarmiganlabs/rtsp-to-onvif:latest` |
+| GitHub Container Registry | `ghcr.io/ptarmiganlabs/rtsp-to-onvif:latest` |
 
 The `compose.yaml` pulls the pre-built image from Docker Hub by default. To use the GitHub Container Registry image instead, comment out the Docker Hub `image:` line and uncomment the GHCR line in `compose.yaml`.
 
@@ -287,14 +287,14 @@ sudo docker compose up --build
 
 **Manually with Docker:**
 ```bash
-docker build -t mountaindude/rtsp-to-onvif:latest .
+docker build -t ptarmiganlabs/rtsp-to-onvif:latest .
 # Or use the included build script:
 ./build-docker.sh
 ```
 
 Then run with the built image:
 ```bash
-docker run --network host --cap-add NET_ADMIN -v $(pwd)/config.yaml:/onvif.yaml mountaindude/rtsp-to-onvif:latest
+docker run --network host --cap-add NET_ADMIN -v $(pwd)/config.yaml:/onvif.yaml ptarmiganlabs/rtsp-to-onvif:latest
 ```
 
 

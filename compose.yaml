@@ -1,8 +1,8 @@
 services:
   rtsp-to-onvif:
-    image: mountaindude/rtsp-to-onvif:latest
+    image: ptarmiganlabs/rtsp-to-onvif:latest
     # Alternative: pull from GitHub Container Registry
-    # image: ghcr.io/mountaindude/rtsp-to-onvif:latest
+    # image: ghcr.io/ptarmiganlabs/rtsp-to-onvif:latest
     hostname: rtsp-to-onvif
     restart: unless-stopped
     volumes:
