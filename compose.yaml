@@ -11,4 +11,4 @@ services:
     cap_add:
       - NET_ADMIN
     environment:
-      DEBUG: 1  # Set to 0 (or remove) to disable debug logging
+      DEBUG: 0 # Set to 1 or true to enable debug logging

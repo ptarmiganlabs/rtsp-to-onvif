@@ -15,7 +15,8 @@ parser.add_argument('config', { help: 'config filename to use', nargs: '?' });
 let args = parser.parse_args();
 
 if (args) {
-    if (process.env.DEBUG) {
+    const debugEnabled = process.env.DEBUG === '1' || process.env.DEBUG === 'true';
+    if (debugEnabled) {
         logger.setLevel('trace');
     }
 
@@ -36,7 +37,7 @@ if (args) {
             logger.info('');
             server.startHttpServer();
             server.startDiscovery();
-            if (process.env.DEBUG)
+            if (debugEnabled)
                 server.enableDebugOutput()
 
             if (!proxies[onvifConfig.target.hostname])
