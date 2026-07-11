@@ -1,4 +1,5 @@
 const os = require('os');
+const { v4: uuidv4 } = require('uuid');
 
 
 function getIp4FromMac(logger, macAddress) {
@@ -20,11 +21,7 @@ function getIp4FromMac(logger, macAddress) {
 
 // Generate a UUIDv4
 function generateUUIDv4() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    })
+    return uuidv4();
 }
 
 //Prefix - Unicast LAA

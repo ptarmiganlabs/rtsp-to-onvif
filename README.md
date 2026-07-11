@@ -2,7 +2,7 @@
 Simple docker container to add any RTSP stream into Unify Protect 5+
 
 This is a continuation from the simple virtual ONVIF proxy that was originally released by Daniela Hase.
-  
+   
 This repository has added features such as ...
 - Making it a pure docker appliance. Pull-And-Run™
 - Only deals with RSTP to ONVIF proxies
@@ -27,26 +27,65 @@ Analog! --> NVR --> RTSP (h264) --> Protect
 
 # 🧾 Getting Started
 
-In a few steps you will have everything needed to run container first time. This will auto confiugre IP's for you.
+In a few steps you will have everything needed to run container first time. This will auto configure IP's for you.
 If you want more control over MAC's and IP's scroll down to Router Setup
 
-## Docker compose
+> ⚠️ **Linux host required**
+>
+> This container requires `network_mode: "host"` and `CAP_NET_ADMIN` to create virtual network interfaces (macvlan) and participate in ONVIF multicast discovery. These features **only work on Linux hosts** — they are not supported on macOS or Windows Docker Desktop. Use a Linux server, VM, or LXC container.
+
+
+## Option A: Pull the pre-built image with Docker Compose
 
 Create a directory locally where you will keep your compose and config files.
 
 1. Create a directory and change into it
-  - `mkdir rtsp-to-onvif` and `cd rtsp-to-onvif`
+   - `mkdir rtsp-to-onvif` and `cd rtsp-to-onvif`
 2. Download the compose.yaml file
-  - `wget https://raw.githubusercontent.com/p10tyr/rtsp-to-onvif/refs/heads/release/compose.yaml`
+   - `wget https://raw.githubusercontent.com/p10tyr/rtsp-to-onvif/refs/heads/release/compose.yaml`
 3. Download the config.example.yaml and clone it
-  - `wget https://raw.githubusercontent.com/p10tyr/rtsp-to-onvif/refs/heads/release/config.example.yaml`
-  - `cp config.example.yaml config.yaml`
+   - `wget https://raw.githubusercontent.com/p10tyr/rtsp-to-onvif/refs/heads/release/config.example.yaml`
+   - `cp config.example.yaml config.yaml`
 4. Edit and configure your cameras
-  - `nano config.yaml`
+   - `nano config.yaml`
 5. Run compose in attached mode and check for any messages.
-  - `sudo docker compose up`
+   - `sudo docker compose up`
 6. If you see the cameras show up in Protect then you can run docker in detached mode (or use Dockge, Portainer, etc...)
-  - `sudo docker compose up d`
+   - `sudo docker compose up -d`
+
+
+## Option B: Build from source with Docker Compose
+
+If you forked or cloned this repository and want to build the image yourself, the `compose.yaml` file includes a `build: .` directive so Docker Compose will build the image from the local `Dockerfile` automatically.
+
+1. Clone the repository and change into it
+   - `git clone https://github.com/p10tyr/rtsp-to-onvif.git` and `cd rtsp-to-onvif`
+2. Create your config file from the example
+   - `cp config.example.yaml config.yaml`
+3. Edit and configure your cameras
+   - `nano config.yaml`
+4. Build and run in attached mode
+   - `sudo docker compose up`
+5. If you see the cameras show up in Protect then you can run docker in detached mode
+   - `sudo docker compose up -d`
+
+To force a rebuild after making code changes:
+   - `sudo docker compose up --build`
+
+
+## Option C: Build the image manually with Docker
+
+1. Clone the repository and change into it
+   - `git clone https://github.com/p10tyr/rtsp-to-onvif.git` and `cd rtsp-to-onvif`
+2. Build the Docker image
+   - `docker build -t kulasolutions/rtsp-to-onvif:latest .`
+   - Or use the included build script: `./build-docker.sh`
+3. Create your config file from the example
+   - `cp config.example.yaml config.yaml`
+4. Edit and configure your cameras
+   - `nano config.yaml`
+5. Run the container
+   - `docker run --network host --cap-add NET_ADMIN -v $(pwd)/config.yaml:/onvif.yaml kulasolutions/rtsp-to-onvif:latest`
 
 
 ## Config file
@@ -58,10 +97,30 @@ Create a directory locally where you will keep your compose and config files.
 
 > ℹ️ **NOTE** 
 > 
-> This file will be overwritten during automatic configuration so comments will be lost.
+> This file will be overwritten during automatic configuration so comments will be lost. Keep a backup of your commented version.
 > 
 > No username or passwords required here!
 
+**Minimal required fields per camera:**
+
+| Field | Purpose | Example |
+|---|---|---|
+| `name` | Display name in ONVIF consumer (letters only, no spaces) | `BulletCam` |
+| `dev` | Host network interface for virtual IP (find via `ip addr`) | `enp2s0` |
+| `target.hostname` | Your camera's IP address | `192.168.1.187` |
+| `target.ports.rtsp` | Camera's RTSP port | `554` |
+| `target.ports.snapshot` | Camera's HTTP port for snapshots | `80` |
+| `highQuality.rtsp` | RTSP stream path | `/Streaming/Channels/101/` |
+| `highQuality.snapshot` | Snapshot URL path | `/ISAPI/Streaming/Channels/101/picture` |
+| `highQuality.width` / `height` | Video resolution | `2048` / `1536` |
+| `highQuality.framerate` | FPS | `15` |
+| `highQuality.bitrate` | Video bitrate in kb/s | `3072` |
+| `highQuality.quality` | Quality (leave at 4) | `4` |
+| `ports.server` / `rtsp` / `snapshot` | Virtual server ports (change if conflicts) | `8081` / `8554` / `8080` |
+
+**Auto-generated (don't set these initially):**
+- `mac` — auto-created with LAA prefix `1A:11:B0:XX:XX:XX`, IP assigned via DHCP
+- `uuid` — auto-generated UUIDv4 (ONVIF device identifier)
 
 ```yaml
 onvif:
@@ -90,7 +149,7 @@ onvif:
 
 
 ## Credits
-Thank you Daniela Hase for relasing the original script to the public!
+Thank you Daniela Hase for releasing the original script to the public!
 Original repository https://github.com/daniela-hase/onvif-server
 
 It has truly inspired me and gave me so many ideas! 
@@ -108,16 +167,16 @@ Known Limitations
 
 - Seems to only support recording normal/high profile h264 video streams at the moment
 - Your luck with h265 may vary
-- Scrubbing does not seem to work? Possibly depends on the h264 implementaion on the camera
+- Scrubbing does not seem to work? Possibly depends on the h264 implementation on the camera
 - Snapshot not implemented yet. Hope it works.
 - HighProfile support only for now - You can supply LowProfile but that shows up as an extra camera.
 
 
 # ⚒️ Roadmap
-- Simplyfy docker - DONE
+- Simplify docker - DONE
   - Only run in Docker - DONE
   - Auto virtual MAC registrations - DONE
-  - Register with DCHP - DONE
+  - Register with DHCP - DONE
   - More debug messages - DONE
 - Learn about the ONVIF Profile S
   - Implement snapshot functionality?
@@ -126,27 +185,28 @@ Known Limitations
 
 # 🛜 Docker and Docker Compose
 
-Debug is enabled byu default in compose.yaml
+Debug is enabled by default in compose.yaml
 Once you have setup complete you can disable it.
 
 ## compose.yaml file 
 
 You don't really have to change anything in this file.
-It has all the settings and permsions required to make it just work.
+It has all the settings and permissions required to make it just work.
 
 Some properties
-- `volumnes: ./config.yaml:/onvif.yaml` - where your config file is. Next step
+- `build: .` - Builds the image from the local Dockerfile instead of pulling from Docker Hub
+- `volumes: ./config.yaml:/onvif.yaml` - where your config file is. Next step
 - `cap_add: NET_ADMIN` - Required to create virtual networks based on config file
-- `environment: DEBUG:1` - Uncommnet if you need more debug logs to show up
+- `environment: DEBUG: 1` - Set to 0 (or remove) to disable debug logs
 
 ## Router setup
 
 ONVIF discovery works by using MAC addresses.
 If you are happy with DHCP you can skip this step
 
-If you really static reservations - Do that BEFORE running the container.
+If you really want static reservations - Do that BEFORE running the container.
 
-Add static reservatations using LAA MAC's
+Add static reservations using LAA MAC's
 - MAC's starting with `x2:xx:xx:xx:xx:xx`,`x6:xx:xx:xx:xx:xx`,`xA:xx:xx:xx:xx:xx` and `xE:xx:xx:xx:xx:xx` are Locally Administered Addresses (LAA)
 
 
@@ -158,9 +218,9 @@ Virtual ONVIF 2
 - MAC 0A:00:00:00:00:52
 - IP 192.168.52
 
-## Konwn problems
+## Known problems
 
-Usuaully mulitple camera will just work out the box with the same server ports working for each virtual IP 
+Usually multiple cameras will just work out of the box with the same server ports working for each virtual IP 
 
 If you seem to have problems like
 - MAC Addresses not showing properly for multiple cameras in Protect
@@ -170,7 +230,7 @@ If you seem to have problems like
 Generally depends from OS to OS. 
 Eg in Ubuntu 22. 
 
-You need to run these commands to allow virtual interface max advertising - but you still need a differnt port per virtual IP
+You need to run these commands to allow virtual interface max advertising - but you still need a different port per virtual IP
 
 ```bash
 sudo sysctl -w net.ipv4.conf.all.arp_ignore=1
@@ -184,7 +244,7 @@ Misc notes
 
 ---
 
-Remove a virutal IP on the host without rebooting
+Remove a virtual IP on the host without rebooting
 `sudo ip link del dev rtsp2onvif_<number>`
 
 ---
@@ -193,9 +253,9 @@ Wrapping an RTSP Stream
 
 This tool is used to create ONVIF devices from regular RTSP streams by creating the following configuration.
 
-Cameras before ONVIF had all kinds of weird and wonderful implemenations
+Cameras before ONVIF had all kinds of weird and wonderful implementations
 
-You will have to find out the stream and snapshot details with your own research, by seraching the web for URLS.
+You will have to find out the stream and snapshot details with your own research, by searching the web for URLs.
 You should verify the stream using VLC and the snapshot URL using a browser.
 
 Things to look out for
@@ -221,13 +281,12 @@ Next you need to figure out the resolution and framerate for the stream. If you 
 
 You can either randomly change a few numbers of the UUID, or use a UUIDv4 generator[^3].
 
-If you have a separate low-quality RTSP stream available, fill in the information for the `lowQuality` section above but this shows up as a seperate camera in unify. 
+If you have a separate low-quality RTSP stream available, fill in the information for the `lowQuality` section above but this shows up as a separate camera in Unify. 
 
 > [!NOTE]
-> Since we don't provide a snapshot url you will onyl see the Onvif logo in certain places in Unifi Protect where it does not show the livestream.
+> Since we don't provide a snapshot url you will only see the Onvif logo in certain places in Unifi Protect where it does not show the livestream.
 
 [^1]: [What is MacVLAN?](https://ipwithease.com/what-is-macvlan)
 [^2]: [Wikipedia: Locally Administered MAC Address](https://en.wikipedia.org/wiki/MAC_address#:~:text=Locally%20administered%20addresses%20are%20distinguished,how%20the%20address%20is%20administered.)
 [^3]: [UUIDv4 Generator](https://www.uuidgenerator.net/)
 [^4]: [Virtual Interfaces with different MAC addresses](https://serverfault.com/questions/682311/virtual-interfaces-with-different-mac-addresses)
-

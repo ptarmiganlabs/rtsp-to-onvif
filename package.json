@@ -17,10 +17,10 @@
   "dependencies": {
     "argparse": "2.0.1",
     "node-tcp-proxy": "0.0.28",
-    "node-uuid": "1.4.8",
+    "uuid": "^11.0.0",
     "simple-node-logger": "21.8.12",
-    "soap": "1.1.5",
+    "soap": "1.9.3",
     "xml2js": "0.6.2",
-    "yaml": "2.6.1"
+    "yaml": "2.9.0"
   }
 }

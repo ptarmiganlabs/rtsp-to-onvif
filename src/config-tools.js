@@ -1,6 +1,6 @@
 const YAML = require('yaml');
 const fs = require('fs');
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 
 const { getIp4FromMac, generateUUIDv4, generateNetworkMac } = require('./net-tools')
 
@@ -13,7 +13,7 @@ function readConfig(logger, configFile) {
     } catch (error) {
         if (error.code === 'ENOENT') {
             logger.info(`File not found: ${configFile}`);
-            exit(-1);
+            process.exit(-1);
         }
         throw error;
     }
@@ -23,15 +23,14 @@ function readConfig(logger, configFile) {
         config = YAML.parse(configData);
     } catch (error) {
         logger.info('Failed to read config, invalid yaml syntax.')
-        exit(-1);
+        process.exit(-1);
     }
 
     return config;
 }
 
 function sleep(seconds){
-    const spawnSync = require('child_process').spawnSync;
-    var sleep = spawnSync('sleep', [seconds]);
+    var sleep = spawnSync('sleep', [seconds.toString()]);
 }
 
 function readAndCheckConfig(logger, configFile) {
@@ -64,16 +63,16 @@ function readAndCheckConfig(logger, configFile) {
 
             logger.info(`NET_CONF: ADD - ${vlanName} MAC: ${onvifConfig.mac}`);
             try {
-                const stdout = execSync(`ip link add ${vlanName} link ${onvifConfig.dev} address ${onvifConfig.mac} type macvlan mode bridge`);
-                logger.debug(stdout);
+                const result = spawnSync('ip', ['link', 'add', vlanName, 'link', onvifConfig.dev, 'address', onvifConfig.mac, 'type', 'macvlan', 'mode', 'bridge']);
+                if (result.stdout) logger.debug(result.stdout.toString());
             } catch (error) {
                 logger.debug(error.message);
             }
 
             logger.info(`NET_CONF: DHCP - ${vlanName}`);
             try {
-                const stdout = execSync(`dhclient ${vlanName}`);
-                logger.debug(stdout);
+                const result = spawnSync('dhclient', [vlanName]);
+                if (result.stdout) logger.debug(result.stdout.toString());
             } catch (error) {
                 logger.debug(error.message);
             }
