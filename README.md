@@ -1,6 +1,18 @@
 # 📸 Virtual Onvif Proxy
 Simple docker container to add any RTSP stream into Unify Protect 5+
 
+> **This is a fork of [p10tyr/rtsp-to-onvif](https://github.com/p10tyr/rtsp-to-onvif)** by Piotr Kula, which itself was forked from [daniela-hase/onvif-server](https://github.com/daniela-hase/onvif-server) by Daniela Hasenbring.
+>
+> The original repository had not been updated for several years. This fork includes:
+> - Security audit of all source code and dependencies
+> - Dependency updates (soap 1.1.5 → 1.9.3, yaml 2.6.1 → 2.9.0, node-uuid → uuid) — resolved 8 npm vulnerabilities (2 critical, 3 high)
+> - Code fixes (process.exit bug, this.listen binding, shell injection hardening)
+> - Dockerfile improvements (pinned Alpine version, HEALTHCHECK)
+> - CI fixes (dependabot config, workflow capitalization bug)
+> - Improved documentation (build from source, Linux requirement, config reference)
+>
+> Original work © Piotr Kula and Daniela Hasenbring. See [LICENSE](LICENSE).
+
 This is a continuation from the simple virtual ONVIF proxy that was originally released by Daniela Hase.
    
 This repository has added features such as ...
@@ -78,14 +90,14 @@ To force a rebuild after making code changes:
 1. Clone the repository and change into it
    - `git clone https://github.com/p10tyr/rtsp-to-onvif.git` and `cd rtsp-to-onvif`
 2. Build the Docker image
-   - `docker build -t kulasolutions/rtsp-to-onvif:latest .`
+   - `docker build -t mountaindude/rtsp-to-onvif:latest .`
    - Or use the included build script: `./build-docker.sh`
 3. Create your config file from the example
    - `cp config.example.yaml config.yaml`
 4. Edit and configure your cameras
    - `nano config.yaml`
 5. Run the container
-   - `docker run --network host --cap-add NET_ADMIN -v $(pwd)/config.yaml:/onvif.yaml kulasolutions/rtsp-to-onvif:latest`
+   - `docker run --network host --cap-add NET_ADMIN -v $(pwd)/config.yaml:/onvif.yaml mountaindude/rtsp-to-onvif:latest`
 
 
 ## Config file

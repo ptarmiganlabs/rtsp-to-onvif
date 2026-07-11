@@ -1,7 +1,7 @@
 services:
   rtsp-to-onvif:
     build: .
-    image: kulasolutions/rtsp-to-onvif:latest
+    image: mountaindude/rtsp-to-onvif:latest
     hostname: rtsp-to-onvif
     restart: unless-stopped
     volumes:
