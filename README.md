@@ -125,8 +125,8 @@ onvif:
 1. Download the files you need and configure
    ```bash
    mkdir rtsp-to-onvif && cd rtsp-to-onvif
-   wget https://raw.githubusercontent.com/mountaindude/rtsp-to-onvif/refs/heads/release/compose.yaml
-   wget https://raw.githubusercontent.com/mountaindude/rtsp-to-onvif/refs/heads/release/config.example.yaml
+   wget https://raw.githubusercontent.com/mountaindude/rtsp-to-onvif/refs/heads/main/compose.yaml
+   wget https://raw.githubusercontent.com/mountaindude/rtsp-to-onvif/refs/heads/main/config.example.yaml
    cp config.example.yaml config.yaml
    nano config.yaml    # edit with your camera details
    ```
