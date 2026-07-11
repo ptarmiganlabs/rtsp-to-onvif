@@ -10,17 +10,18 @@ Maintained by [mountaindude](https://github.com/mountaindude) ([Ptarmigan Labs](
 This is a fork of [p10tyr/rtsp-to-onvif](https://github.com/p10tyr/rtsp-to-onvif) by Piotr Kula, which itself was forked from [daniela-hase/onvif-server](https://github.com/daniela-hase/onvif-server) by Daniela Hasenbring. The original repository had not been updated for several years.
 
 This fork was created to:
+
 - **Security audit** all source code and dependencies before running in production
 - **Update dependencies** to resolve 8 npm vulnerabilities (2 critical, 3 high, 2 moderate, 1 low)
 - **Fix code bugs** (process.exit, this.listen binding, shell injection hardening)
 - **Improve Docker setup** (pinned Alpine version, HEALTHCHECK, compose build directive)
 - **Fix CI** (dependabot config, workflow capitalization bug)
 - **Build and publish new Docker images** under `mountaindude/rtsp-to-onvif` (Docker Hub + GitHub Container Registry)
-
+- **Long term maintenance** (Make it easy to update dependencies, rebuild, and publish new images)
 
 ## Security audit results
 
-A full security audit was performed before building and running the Docker image. The codebase is small (~670 lines of JavaScript) and was reviewed in its entirety.
+A thorough security audit was performed as part of this fork. The codebase is small (~670 lines of JavaScript) and was reviewed in its entirety.
 
 **Verdict: Not malicious.** No outbound callbacks, no data exfiltration, no telemetry, no arbitrary code download/execution. All network operations are local (WS-Discovery multicast, TCP proxy, DHCP). All URLs are either ONVIF/W3C namespace constants or constructed from the user's own config file.
 
@@ -46,7 +47,6 @@ Result: `npm audit` reports **0 vulnerabilities** (down from 8).
 
 - Pinned base image `node:22-alpine` → `node:22-alpine3.20` (reproducible builds)
 - Added `HEALTHCHECK` with `curl`
-- Added `build: .` to `compose.yaml` (build from local source instead of pulling upstream image)
 - Uncommented `restart: unless-stopped`
 
 ### CI fixes
@@ -120,20 +120,21 @@ onvif:
 >
 > This container requires `network_mode: "host"` and `CAP_NET_ADMIN` to create virtual network interfaces (macvlan) and participate in ONVIF multicast discovery. These features **only work on Linux hosts** — they are not supported on macOS or Windows Docker Desktop. Use a Linux server, VM, or LXC container.
 
-### 1. Clone and configure
+### Option A: Use a pre-built image (recommended)
 
-```bash
-git clone https://github.com/mountaindude/rtsp-to-onvif.git
-cd rtsp-to-onvif
-cp config.example.yaml config.yaml
-nano config.yaml    # edit with your camera details
-```
+1. Download the files you need and configure
+   ```bash
+   mkdir rtsp-to-onvif && cd rtsp-to-onvif
+   wget https://raw.githubusercontent.com/mountaindude/rtsp-to-onvif/refs/heads/release/compose.yaml
+   wget https://raw.githubusercontent.com/mountaindude/rtsp-to-onvif/refs/heads/release/config.example.yaml
+   cp config.example.yaml config.yaml
+   nano config.yaml    # edit with your camera details
+   ```
 
-### 2. Build and run
-
-```bash
-sudo docker compose up --build
-```
+2. Pull and run
+   ```bash
+   sudo docker compose up
+   ```
 
 Watch the logs for:
 - `CONFIG: UUIDv4 - <generated>`
@@ -141,11 +142,44 @@ Watch the logs for:
 - `SERVER: <camera name> - HTTP listening on <ip>:8081`
 - `PROXY: 8554 --> <camera ip>:554`
 
-### 3. Adopt in Unifi Protect
+### Option B: Build from source
+
+1. Clone the repository
+   ```bash
+   git clone https://github.com/mountaindude/rtsp-to-onvif.git
+   cd rtsp-to-onvif
+   ```
+
+2. Create your config
+   ```bash
+   cp config.example.yaml config.yaml
+   nano config.yaml    # edit with your camera details
+   ```
+
+3. Build and run with Docker Compose
+   ```bash
+   sudo docker compose up --build
+   ```
+
+   Or build manually then run:
+   ```bash
+   docker build -t mountaindude/rtsp-to-onvif:latest .
+   # Or use the included build script:
+   ./build-docker.sh
+   docker run --network host --cap-add NET_ADMIN -v $(pwd)/config.yaml:/onvif.yaml mountaindude/rtsp-to-onvif:latest
+   ```
+
+Watch the logs for:
+- `CONFIG: UUIDv4 - <generated>`
+- `CONFIG: MAC - <generated>`
+- `SERVER: <camera name> - HTTP listening on <ip>:8081`
+- `PROXY: 8554 --> <camera ip>:554`
+
+### Adopt in Unifi Protect
 
 Go to Protect → Devices → Add Device. The camera should appear. Adopt it and enter your camera's credentials.
 
-### 4. Switch to detached mode
+### Switch to detached mode
 
 Once confirmed working, stop with `Ctrl+C` and run:
 
@@ -153,7 +187,7 @@ Once confirmed working, stop with `Ctrl+C` and run:
 sudo docker compose up -d
 ```
 
-### 5. Reduce log verbosity (optional)
+### Reduce log verbosity (optional)
 
 Debug logging is enabled by default. To disable, edit `compose.yaml` and set `DEBUG: 0`:
 
@@ -173,7 +207,7 @@ sudo docker compose logs -f
 # Stop the container
 sudo docker compose down
 
-# Rebuild after pulling code updates
+# Rebuild after pulling code updates (if building from source)
 git pull && sudo docker compose up --build -d
 
 # Clean up stale virtual interfaces if the container didn't exit cleanly
@@ -240,18 +274,25 @@ Images are published to two registries:
 | Docker Hub | `mountaindude/rtsp-to-onvif:latest` |
 | GitHub Container Registry | `ghcr.io/mountaindude/rtsp-to-onvif:latest` |
 
-The `compose.yaml` file includes `build: .` so Docker Compose builds from the local Dockerfile by default. To pull a pre-built image instead, remove the `build: .` line.
+The `compose.yaml` pulls the pre-built image from Docker Hub by default. To use the GitHub Container Registry image instead, comment out the Docker Hub `image:` line and uncomment the GHCR line in `compose.yaml`.
 
-### Build manually
+### Building from source
 
+To build the image locally instead of pulling a pre-built one:
+
+**With Docker Compose** — add `build: .` to `compose.yaml` and run:
+```bash
+sudo docker compose up --build
+```
+
+**Manually with Docker:**
 ```bash
 docker build -t mountaindude/rtsp-to-onvif:latest .
 # Or use the included build script:
 ./build-docker.sh
 ```
 
-### Run manually (without compose)
-
+Then run with the built image:
 ```bash
 docker run --network host --cap-add NET_ADMIN -v $(pwd)/config.yaml:/onvif.yaml mountaindude/rtsp-to-onvif:latest
 ```
