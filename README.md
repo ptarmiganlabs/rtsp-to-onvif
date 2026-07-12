@@ -10,7 +10,12 @@ Maintained by [mountaindude](https://github.com/mountaindude) ([Ptarmigan Labs](
 
 This is a fork of [p10tyr/rtsp-to-onvif](https://github.com/p10tyr/rtsp-to-onvif) by Piotr Kula, which itself was forked from [daniela-hase/onvif-server](https://github.com/daniela-hase/onvif-server) by Daniela Hasenbring. The original repository (Piotr's) had not been updated for several years.
 
-This fork was created to:
+Background is that I have a few "Axis Companion Bullet Mini LE" cameras ([link](https://help.axis.com/en-US/axis-companion-bullet-mini-le)) that are nice and inexpensive, but they are not ONVIF compliant. Instead their firmware is locked down so they only work with Axis' own hardware/video recorders.
+
+I wanted to use them with UniFi Protect, which requires ONVIF cameras. This tool allows me to wrap the RTSP stream from the camera in an ONVIF interface so that Protect can adopt it.  
+There are for sure other tools that do this, but I wanted a small solution that I can understand how it works and that runs as a Docker container. Having full control over the source code and dependencies is a bonus.
+
+So, this fork was created to:
 
 - **Security audit** all source code and dependencies before running in production
 - **Update dependencies** to resolve 8 npm vulnerabilities (2 critical, 3 high, 2 moderate, 1 low)
@@ -34,7 +39,7 @@ Use at your own risk.
 
 A security audit was performed as part of this fork. The codebase is small (~670 lines of JavaScript) and was reviewed in its entirety.
 
-**Verdict: Not malicious.** No outbound callbacks, no data exfiltration, no telemetry, no arbitrary code download/execution. All network operations are local (WS-Discovery multicast, TCP proxy, DHCP). All URLs are either ONVIF/W3C namespace constants or constructed from the user's own config file.
+**Verdict: Not malicious, as far as I can tell.** No outbound callbacks, no data exfiltration, no telemetry, no arbitrary code download/execution. All network operations are local (WS-Discovery multicast, TCP proxy, DHCP). All URLs are either ONVIF/W3C namespace constants or constructed from the user's own config file.
 
 ### Dependencies updated
 
