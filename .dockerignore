@@ -27,3 +27,13 @@ README.md
 **/CHANGELOG.md
 **/test
 AGENTS.md
+config.yaml
+config.example.yaml
+build-docker.sh
+net_clean.sh
+compose.yaml
+.github
+.vscode
+.nvmrc
+SECURITY.md
+.gitattributes
