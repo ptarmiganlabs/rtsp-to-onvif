@@ -1,5 +1,6 @@
 # 📸 Virtual Onvif Proxy (Fork)
-Simple docker container to add any RTSP stream into Unify Protect 5+
+
+Simple docker container to add any RTSP stream into UniFi Protect 5+
 
 Maintained by [mountaindude](https://github.com/mountaindude) ([Ptarmigan Labs](https://github.com/ptarmiganlabs)).
 
@@ -7,7 +8,7 @@ Maintained by [mountaindude](https://github.com/mountaindude) ([Ptarmigan Labs](
 
 ## Why this fork?
 
-This is a fork of [p10tyr/rtsp-to-onvif](https://github.com/p10tyr/rtsp-to-onvif) by Piotr Kula, which itself was forked from [daniela-hase/onvif-server](https://github.com/daniela-hase/onvif-server) by Daniela Hasenbring. The original repository had not been updated for several years.
+This is a fork of [p10tyr/rtsp-to-onvif](https://github.com/p10tyr/rtsp-to-onvif) by Piotr Kula, which itself was forked from [daniela-hase/onvif-server](https://github.com/daniela-hase/onvif-server) by Daniela Hasenbring. The original repository (Piotr's) had not been updated for several years.
 
 This fork was created to:
 
@@ -16,12 +17,22 @@ This fork was created to:
 - **Fix code bugs** (process.exit, this.listen binding, shell injection hardening)
 - **Improve Docker setup** (pinned Alpine version, HEALTHCHECK, compose build directive)
 - **Fix CI** (dependabot config, workflow capitalization bug)
+- **Unit tests** (basic coverage for config-tools.js and onvif-server.js)
 - **Build and publish new Docker images** under `ptarmiganlabs/rtsp-to-onvif` (Docker Hub + GitHub Container Registry)
-- **Long term maintenance** (Make it easy to update dependencies, rebuild, and publish new images)
+- **Long term maintenance** (Make it easy to update dependencies, automatic version numbering, rebuild, and publish new images)
+
+## Security disclaimer
+
+This fork serves my own needs. I have a well isolated network and a small number of cameras.  
+The tool could certainly benefit from additional security hardening (CORS, better credentials handling, etc.), so please review the code and test it in a safe environment before using it in production or exposing it to the internet.
+
+Also, I have no way to test every camera model, and I cannot guarantee that this software will work for you.
+
+Use at your own risk.
 
 ## Security audit results
 
-A thorough security audit was performed as part of this fork. The codebase is small (~670 lines of JavaScript) and was reviewed in its entirety.
+A security audit was performed as part of this fork. The codebase is small (~670 lines of JavaScript) and was reviewed in its entirety.
 
 **Verdict: Not malicious.** No outbound callbacks, no data exfiltration, no telemetry, no arbitrary code download/execution. All network operations are local (WS-Discovery multicast, TCP proxy, DHCP). All URLs are either ONVIF/W3C namespace constants or constructed from the user's own config file.
 
@@ -33,7 +44,7 @@ A thorough security audit was performed as part of this fork. The codebase is sm
 | `yaml` | 2.6.1 | 2.9.0 | Stack overflow fix (GHSA-48c2-rrv3-qjmp) |
 | `node-uuid` | 1.4.8 | replaced with `uuid` ^11.0.0 | Deprecated package; crypto-secure RNG instead of Math.random() |
 
-Result: `npm audit` reports **0 vulnerabilities** (down from 8).
+The above is the status as of July 2026. Dependencies and versions are subject to change in future releases. See the `package.json` file for the current versions.
 
 ### Code fixes
 
@@ -43,11 +54,17 @@ Result: `npm audit` reports **0 vulnerabilities** (down from 8).
 | `this.listen` loses context in HTTP server | `src/onvif-server.js` | Wrapped in arrow function to preserve `this` binding |
 | Shell injection via config values | `src/config-tools.js` | Replaced `execSync` string interpolation with `spawnSync` arg arrays |
 
+These are code changes done as part of the initial onboarding of the repository.
+Additional code updates may be made in future releases as needed.
+
 ### Docker improvements
 
-- Pinned base image `node:22-alpine` → `node:22-alpine3.20` (reproducible builds)
+- Bumped and pinned base image to `node:24-alpine3.24` (reproducible builds)
 - Added `HEALTHCHECK` with `curl`
 - Uncommented `restart: unless-stopped`
+
+These are changes done as part of the initial onboarding of the repository.
+Additional updates may be made in future releases as needed.
 
 ### CI fixes
 
@@ -56,20 +73,23 @@ Result: `npm audit` reports **0 vulnerabilities** (down from 8).
 - Updated workflow to publish to both Docker Hub and GitHub Container Registry
 - Removed Docker Build Cloud config from upstream author
 
+These are changes done as part of the initial onboarding of the repository.
+Additional updates may be made in future releases as needed.
 
 ## My camera setup
 
-I'm using an **Axis Companion Bullet Mini LE** at `192.168.1.112` with credentials `root` / `pass`.
+I'm using an **Axis Companion Bullet Mini LE** ([link to AXIS](https://help.axis.com/en-US/axis-companion-bullet-mini-le)) at `10.11.12.13` (made-up IP) with credentials `<username>` / `<password>`. If your camera ships with default credentials, change them if possible.
 
 ### Finding the RTSP path
 
-The RTSP path was determined by testing with `ffprobe`:
+The RTSP path was found at [Home Assistant forums](https://community.home-assistant.io/t/axis-cameras-companion-line-solved-by-kimjohnson/405402/16) and tested with `ffprobe`:
 
 ```bash
-ffprobe "rtsp://root:pass@192.168.1.112/axis-media/media.amp?videocodec=h264&Axis-Orig-Sw=true"
+ffprobe "rtsp://<username>:<password>@10.11.12.13/axis-media/media.amp?videocodec=h264&Axis-Orig-Sw=true"
 ```
 
 Output confirmed:
+
 - **Codec**: H264 (High profile)
 - **Resolution**: 1920x1080
 - **Framerate**: 30 fps
@@ -78,7 +98,7 @@ Output confirmed:
 
 The snapshot endpoint (`/axis-cgi/jpg/image.cgi`) was tested with various curl auth options (`-u`, `--digest`, `--anyauth`) but none returned a valid JPEG — the camera likely requires a specific digest auth handshake that curl couldn't negotiate.
 
-**This is not a problem for Unifi Protect.** The live RTSP stream works perfectly, and Protect shows the ONVIF logo placeholder where snapshots aren't available. The snapshot path is still included in the config for completeness.
+**This is not a problem for UniFi Protect.** The live RTSP stream works, and Protect shows the video stream. The snapshot path is still included in the config for completeness.
 
 ### Working config.yaml
 
@@ -89,7 +109,7 @@ onvif:
   - name: AxisCompanionBulletMiniLE
     dev: ens18
     target:
-      hostname: 192.168.1.112
+      hostname: 10.11.12.13
       ports:
         rtsp: 554
         snapshot: 80
@@ -108,11 +128,11 @@ onvif:
 ```
 
 **Notes:**
+
 - `dev: ens18` — the VM's network interface (find yours with `ip addr` on the Linux host)
 - `ports.snapshot: 8282` — changed from the default `8080` because it was already in use on the host
 - `mac` and `uuid` are intentionally omitted — auto-generated on first run and written back to the file
 - Credentials (`root`/`pass`) are **not** in the config file — enter them in Unifi Protect during adoption
-
 
 ## Quick start
 
@@ -123,6 +143,7 @@ onvif:
 ### Option A: Use a pre-built image (recommended)
 
 1. Download the files you need and configure
+
    ```bash
    mkdir rtsp-to-onvif && cd rtsp-to-onvif
    wget https://raw.githubusercontent.com/ptarmiganlabs/rtsp-to-onvif/refs/heads/main/compose.yaml
@@ -132,11 +153,13 @@ onvif:
    ```
 
 2. Pull and run
+
    ```bash
    sudo docker compose up
    ```
 
 Watch the logs for:
+
 - `CONFIG: UUIDv4 - <generated>`
 - `CONFIG: MAC - <generated>`
 - `SERVER: <camera name> - HTTP listening on <ip>:8081`
@@ -145,23 +168,27 @@ Watch the logs for:
 ### Option B: Build from source
 
 1. Clone the repository
+
    ```bash
    git clone https://github.com/ptarmiganlabs/rtsp-to-onvif.git
    cd rtsp-to-onvif
    ```
 
 2. Create your config
+
    ```bash
    cp config.example.yaml config.yaml
    nano config.yaml    # edit with your camera details
    ```
 
 3. Build and run with Docker Compose
+
    ```bash
    sudo docker compose up --build
    ```
 
    Or build manually then run:
+
    ```bash
    docker build -t ptarmiganlabs/rtsp-to-onvif:latest .
    # Or use the included build script:
@@ -170,6 +197,7 @@ Watch the logs for:
    ```
 
 Watch the logs for:
+
 - `CONFIG: UUIDv4 - <generated>`
 - `CONFIG: MAC - <generated>`
 - `SERVER: <camera name> - HTTP listening on <ip>:8081`
@@ -224,11 +252,11 @@ sudo sysctl -w net.ipv4.conf.all.arp_announce=2
 ```
 
 To persist across reboots:
+
 ```bash
 echo 'net.ipv4.conf.all.arp_ignore=1' | sudo tee /etc/sysctl.d/99-onvif.conf
 echo 'net.ipv4.conf.all.arp_announce=2' | sudo tee -a /etc/sysctl.d/99-onvif.conf
 ```
-
 
 ## Config file reference
 
@@ -249,7 +277,7 @@ echo 'net.ipv4.conf.all.arp_announce=2' | sudo tee -a /etc/sysctl.d/99-onvif.con
 |---|---|---|
 | `name` | Display name in ONVIF consumer (letters only, no spaces) | `AxisCompanionBulletMiniLE` |
 | `dev` | Host network interface for virtual IP (find via `ip addr`) | `ens18` |
-| `target.hostname` | Your camera's IP address | `192.168.1.112` |
+| `target.hostname` | Your camera's IP address | `10.11.12.13` |
 | `target.ports.rtsp` | Camera's RTSP port | `554` |
 | `target.ports.snapshot` | Camera's HTTP port for snapshots | `80` |
 | `highQuality.rtsp` | RTSP stream path | `/axis-media/media.amp?videocodec=h264` |
@@ -261,9 +289,9 @@ echo 'net.ipv4.conf.all.arp_announce=2' | sudo tee -a /etc/sysctl.d/99-onvif.con
 | `ports.server` / `rtsp` / `snapshot` | Virtual server ports (change if conflicts) | `8081` / `8554` / `8282` |
 
 **Auto-generated (don't set these initially):**
+
 - `mac` — auto-created with LAA prefix `1A:11:B0:XX:XX:XX`, IP assigned via DHCP
 - `uuid` — auto-generated UUIDv4 (ONVIF device identifier)
-
 
 ## Docker image
 
@@ -276,16 +304,29 @@ Images are published to two registries:
 
 The `compose.yaml` pulls the pre-built image from Docker Hub by default. To use the GitHub Container Registry image instead, comment out the Docker Hub `image:` line and uncomment the GHCR line in `compose.yaml`.
 
+### Supported architectures
+
+Images are published as a multi-arch manifest for:
+
+- `linux/amd64` (x86_64)
+- `linux/arm64` (Raspberry Pi 4/5, AWS Graviton, Apple Silicon hosts)
+
+Docker automatically pulls the image matching your host's architecture.
+
+> ℹ️ A local `./build-docker.sh` build produces only your host's architecture (single-platform), not the multi-arch manifest.
+
 ### Building from source
 
 To build the image locally instead of pulling a pre-built one:
 
 **With Docker Compose** — add `build: .` to `compose.yaml` and run:
+
 ```bash
 sudo docker compose up --build
 ```
 
 **Manually with Docker:**
+
 ```bash
 docker build -t ptarmiganlabs/rtsp-to-onvif:latest .
 # Or use the included build script:
@@ -293,10 +334,10 @@ docker build -t ptarmiganlabs/rtsp-to-onvif:latest .
 ```
 
 Then run with the built image:
+
 ```bash
 docker run --network host --cap-add NET_ADMIN -v $(pwd)/config.yaml:/onvif.yaml ptarmiganlabs/rtsp-to-onvif:latest
 ```
-
 
 ---
 ---
@@ -308,20 +349,23 @@ docker run --network host --cap-add NET_ADMIN -v $(pwd)/config.yaml:/onvif.yaml 
 ---
 
 # 📸 Virtual Onvif Proxy
-Simple docker container to add any RTSP stream into Unify Protect 5+
+
+Simple docker container to add any RTSP stream into UniFi Protect 5+
 
 This is a continuation from the simple virtual ONVIF proxy that was originally released by Daniela Hase.
   
 This repository has added features such as ...
+
 - Making it a pure docker appliance. Pull-And-Run™
 - Only deals with RSTP to ONVIF proxies
 - Auto creates MAC addresses and registers IPv4 with DHCP
 - more to come...
 
 What can you adopt?
-- Adopt `IP camera --> RTSP (h264) --> Protect` 
-- Adopt `Raspberry Pi Camera --> uv4l --> RTSP (h254) -- Protect`
-- Adopt `Analog --> NVR --> RTSP (h264) --> Protect` 
+
+- Adopt `IP camera --> RTSP (h264) --> Protect`
+- Adopt `Raspberry Pi Camera --> uv4l --> RTSP (h264) --> Protect`
+- Adopt `Analog --> NVR --> RTSP (h264) --> Protect`
 - Adopt `WebCam --> go2rtc --> RTSP (h264) --> Protect`
 - Adopt `... Anything RTSP --> Protect`
 
@@ -333,7 +377,6 @@ Analog! --> NVR --> RTSP (h264) --> Protect
 
 ![analog-dvr-rtsp](https://github.com/user-attachments/assets/ef401f8d-c56c-4ab0-8a44-630823a35ad7)
 
-
 # 🧾 Getting Started
 
 In a few steps you will have everything needed to run container first time. This will auto confiugre IP's for you.
@@ -344,19 +387,29 @@ If you want more control over MAC's and IP's scroll down to Router Setup
 Create a directory locally where you will keep your compose and config files.
 
 1. Create a directory and change into it
-  - `mkdir rtsp-to-onvif` and `cd rtsp-to-onvif`
-2. Download the compose.yaml file
-  - `wget https://raw.githubusercontent.com/p10tyr/rtsp-to-onvif/refs/heads/release/compose.yaml`
-3. Download the config.example.yaml and clone it
-  - `wget https://raw.githubusercontent.com/p10tyr/rtsp-to-onvif/refs/heads/release/config.example.yaml`
-  - `cp config.example.yaml config.yaml`
-4. Edit and configure your cameras
-  - `nano config.yaml`
-5. Run compose in attached mode and check for any messages.
-  - `sudo docker compose up`
-6. If you see the cameras show up in Protect then you can run docker in detached mode (or use Dockge, Portainer, etc...)
-  - `sudo docker compose up d`
 
+- `mkdir rtsp-to-onvif` and `cd rtsp-to-onvif`
+
+1. Download the compose.yaml file
+
+- `wget https://raw.githubusercontent.com/p10tyr/rtsp-to-onvif/refs/heads/release/compose.yaml`
+
+1. Download the config.example.yaml and clone it
+
+- `wget https://raw.githubusercontent.com/p10tyr/rtsp-to-onvif/refs/heads/release/config.example.yaml`
+- `cp config.example.yaml config.yaml`
+
+1. Edit and configure your cameras
+
+- `nano config.yaml`
+
+1. Run compose in attached mode and check for any messages.
+
+- `sudo docker compose up`
+
+1. If you see the cameras show up in Protect then you can run docker in detached mode (or use Dockge, Portainer, etc...)
+
+- `sudo docker compose up -d`
 
 ## Config file
 
@@ -365,12 +418,11 @@ Create a directory locally where you will keep your compose and config files.
 - UUID addresses will be added automatically
 - IPv4 will come from your DHCP server
 
-> ℹ️ **NOTE** 
-> 
+> ℹ️ **NOTE**
+>
 > This file will be overwritten during automatic configuration so comments will be lost.
-> 
+>
 > No username or passwords required here!
-
 
 ```yaml
 onvif:
@@ -397,18 +449,19 @@ onvif:
     #uuid - ONVIF ID - automatically added here. If you change it Protect will think its a different camera
 ```
 
-
 ## Credits
-Thank you Daniela Hase for relasing the original script to the public!
-Original repository https://github.com/daniela-hase/onvif-server
 
-It has truly inspired me and gave me so many ideas! 
+Thank you Daniela Hase for relasing the original script to the public!
+Original repository <https://github.com/daniela-hase/onvif-server>
+
+It has truly inspired me and gave me so many ideas!
 That is why I had to fork your original repo so that I could develop this further to be a docker appliance.
 
 ## Unifi Protect
+
 Tested on Unifi Protect 5.0.40+
 
-Once the device shows up in protect, make sure the correct MAC address is assigned to the IP before adopting. 
+Once the device shows up in protect, make sure the correct MAC address is assigned to the IP before adopting.
 You can then adopt it and provide the username and password that are set on the real RTSP device.
 
 Known Limitations
@@ -421,8 +474,8 @@ Known Limitations
 - Snapshot not implemented yet. Hope it works.
 - HighProfile support only for now - You can supply LowProfile but that shows up as an extra camera.
 
-
 # ⚒️ Roadmap
+
 - Simplyfy docker - DONE
   - Only run in Docker - DONE
   - Auto virtual MAC registrations - DONE
@@ -432,18 +485,18 @@ Known Limitations
   - Implement snapshot functionality?
   - Implement some other features?
 
-
 # 🛜 Docker and Docker Compose
 
 Debug is enabled byu default in compose.yaml
 Once you have setup complete you can disable it.
 
-## compose.yaml file 
+## compose.yaml file
 
 You don't really have to change anything in this file.
 It has all the settings and permsions required to make it just work.
 
 Some properties
+
 - `volumnes: ./config.yaml:/onvif.yaml` - where your config file is. Next step
 - `cap_add: NET_ADMIN` - Required to create virtual networks based on config file
 - `environment: DEBUG:1` - Uncommnet if you need more debug logs to show up
@@ -456,28 +509,31 @@ If you are happy with DHCP you can skip this step
 If you really static reservations - Do that BEFORE running the container.
 
 Add static reservatations using LAA MAC's
+
 - MAC's starting with `x2:xx:xx:xx:xx:xx`,`x6:xx:xx:xx:xx:xx`,`xA:xx:xx:xx:xx:xx` and `xE:xx:xx:xx:xx:xx` are Locally Administered Addresses (LAA)
 
-
 Virtual ONVIF 1
+
 - MAC 0A:00:00:00:00:51
 - IP 192.168.51
 
 Virtual ONVIF 2
+
 - MAC 0A:00:00:00:00:52
 - IP 192.168.52
 
 ## Konwn problems
 
-Usuaully mulitple camera will just work out the box with the same server ports working for each virtual IP 
+Usuaully mulitple camera will just work out the box with the same server ports working for each virtual IP
 
 If you seem to have problems like
+
 - MAC Addresses not showing properly for multiple cameras in Protect
 - Port numbers in use error during startup
 - MAC shows the wrong IP
 
-Generally depends from OS to OS. 
-Eg in Ubuntu 22. 
+Generally depends from OS to OS.
+Eg in Ubuntu 22.
 
 You need to run these commands to allow virtual interface max advertising - but you still need a differnt port per virtual IP
 
@@ -485,7 +541,6 @@ You need to run these commands to allow virtual interface max advertising - but 
 sudo sysctl -w net.ipv4.conf.all.arp_ignore=1
 sudo sysctl -w net.ipv4.conf.all.arp_announce=2
 ```
-
 
 ### Other stuff
 
@@ -508,12 +563,14 @@ You will have to find out the stream and snapshot details with your own research
 You should verify the stream using VLC and the snapshot URL using a browser.
 
 Things to look out for
+
 - http is enabled (for snapshots)
 - if snapshot is not working, try admin account. some cameras are like that
 - rtsp is enabled ideally on port 554
 
 **RTSP Example:**
 Assume you have this RTSP stream:
+
 ```txt
 rtsp://192.168.1.32:554/Streaming/Channels/101/
        \__________/ \_/\______________________/
@@ -521,21 +578,19 @@ rtsp://192.168.1.32:554/Streaming/Channels/101/
          Hostname           |
                           Path
 ```
+
 If your RTSP url does not have a port it uses the default port 554.
 
 Your RTSP url may contain a username and password - those should NOT be included in the config file.
 Instead you will have to enter them in the software that you plan on consuming this Onvif camera in, for example during adoption in Unifi Protect.
 
-Next you need to figure out the resolution and framerate for the stream. If you don't know them, you can use VLC to open the RTSP stream and check the _Media Information_ (Window -> Media Information) for the _"Video Resolution"_ and _"Frame rate"_ on the _"Codec Details"_ page, and the _"Stream bitrate"_ on the _"Statistics"_ page. The bitrate will fluctuate quite a bit most likely, so just pick a number that is close to it (e.g. 1024, 2048, 4096 ..).
+Next you need to figure out the resolution and framerate for the stream. If you don't know them, you can use VLC to open the RTSP stream and check the *Media Information* (Window -> Media Information) for the *"Video Resolution"* and *"Frame rate"* on the *"Codec Details"* page, and the *"Stream bitrate"* on the *"Statistics"* page. The bitrate will fluctuate quite a bit most likely, so just pick a number that is close to it (e.g. 1024, 2048, 4096 ..).
 
 You can either randomly change a few numbers of the UUID, or use a UUIDv4 generator[^3].
 
-If you have a separate low-quality RTSP stream available, fill in the information for the `lowQuality` section above but this shows up as a seperate camera in unify. 
+If you have a separate low-quality RTSP stream available, fill in the information for the `lowQuality` section above but this shows up as a seperate camera in unify.
 
 > [!NOTE]
 > Since we don't provide a snapshot url you will onyl see the Onvif logo in certain places in Unifi Protect where it does not show the livestream.
 
-[^1]: [What is MacVLAN?](https://ipwithease.com/what-is-macvlan)
-[^2]: [Wikipedia: Locally Administered MAC Address](https://en.wikipedia.org/wiki/MAC_address#:~:text=Locally%20administered%20addresses%20are%20distinguished,how%20the%20address%20is%20administered.)
 [^3]: [UUIDv4 Generator](https://www.uuidgenerator.net/)
-[^4]: [Virtual Interfaces with different MAC addresses](https://serverfault.com/questions/682311/virtual-interfaces-with-different-mac-addresses)

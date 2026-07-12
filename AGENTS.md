@@ -20,9 +20,9 @@ Small (~670 LOC) Node.js app: a virtual RTSP→ONVIF proxy. Fork of p10tyr/rtsp-
 
 ## Docker / runtime gotchas
 
-- Base image `node:22-alpine3.20` (Alpine pinned for reproducible builds). Image installs PRODUCTION deps only — dev tooling is absent from the built image.
+- Base image `node:24-alpine3.24` (Alpine pinned for reproducible builds). Image installs PRODUCTION deps only — dev tooling is absent from the built image.
 - `compose.yaml` uses `network_mode: host` + `cap_add: NET_ADMIN` + `volumes: ./config.yaml:/onvif.yaml`. Required: the proxy assigns virtual IPs on a real interface and does WS-Discovery multicast. Do not "simplify" to bridge networking.
-- Images publish to BOTH `ptarmiganlabs/rtsp-to-onvif` (Docker Hub) and `ghcr.io/ptarmiganlabs/rtsp-to-onvif`.
+- Images publish to BOTH `ptarmiganlabs/rtsp-to-onvif` (Docker Hub) and `ghcr.io/ptarmiganlabs/rtsp-to-onvif`, as a multi-arch manifest (`linux/amd64`, `linux/arm64`).
 
 ## Releases & versioning (release-please — NEVER bump by hand)
 

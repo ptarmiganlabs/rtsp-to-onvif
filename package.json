@@ -8,6 +8,9 @@
     "test:watch": "node --test --watch"
   },
   "license": "MIT",
+  "engines": {
+    "node": ">=24"
+  },
   "author": {
     "git" : "https://github.com/p10tyr/rtsp-to-onvif",
     "name": "Piotr Kula",
