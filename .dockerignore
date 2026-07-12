@@ -22,3 +22,6 @@
 **/values.dev.yaml
 LICENSE
 README.md
+**/release-please-config.json
+**/.release-please-manifest.json
+**/CHANGELOG.md

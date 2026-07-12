@@ -1,9 +1,8 @@
 name: Build Docker and Publish
 
 on:
-  push:
-    branches:
-      - "main"
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
@@ -17,26 +16,34 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           persist-credentials: false
+
+      - name: Extract semver tag
+        id: semver
+        run: echo "TAG=${GITHUB_REF#refs/tags/rtsp-to-onvif-v}" >> "$GITHUB_ENV"
+
       - name: Log in to Docker Hub
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
       - name: Build and push
         uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
         with:
           context: .
           tags: |
-            ptarmiganlabs/rtsp-to-onvif:0.1.${{ github.run_number }}
+            ptarmiganlabs/rtsp-to-onvif:${{ env.TAG }}
             ptarmiganlabs/rtsp-to-onvif:latest
-            ghcr.io/ptarmiganlabs/rtsp-to-onvif:0.1.${{ github.run_number }}
+            ghcr.io/ptarmiganlabs/rtsp-to-onvif:${{ env.TAG }}
             ghcr.io/ptarmiganlabs/rtsp-to-onvif:latest
           outputs: ${{ github.event_name == 'pull_request' && 'type=cacheonly' || 'type=registry,push=true' }}
