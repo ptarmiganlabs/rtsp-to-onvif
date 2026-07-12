@@ -364,7 +364,7 @@ This repository has added features such as ...
 What can you adopt?
 
 - Adopt `IP camera --> RTSP (h264) --> Protect`
-- Adopt `Raspberry Pi Camera --> uv4l --> RTSP (h254) -- Protect`
+- Adopt `Raspberry Pi Camera --> uv4l --> RTSP (h264) --> Protect`
 - Adopt `Analog --> NVR --> RTSP (h264) --> Protect`
 - Adopt `WebCam --> go2rtc --> RTSP (h264) --> Protect`
 - Adopt `... Anything RTSP --> Protect`
