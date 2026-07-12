@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/ptarmiganlabs/rtsp-to-onvif/compare/rtsp-to-onvif-v1.2.0...rtsp-to-onvif-v1.2.1) (2026-07-12)
+
+
+### Documentation
+
+* Update README to clarify background and purpose of the fork ([a14b72e](https://github.com/ptarmiganlabs/rtsp-to-onvif/commit/a14b72eda91e92ef472401b15541af16a70befba))
+
 ## [1.2.0](https://github.com/ptarmiganlabs/rtsp-to-onvif/compare/rtsp-to-onvif-v1.1.0...rtsp-to-onvif-v1.2.0) (2026-07-12)
 
 
