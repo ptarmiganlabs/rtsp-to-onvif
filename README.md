@@ -295,6 +295,17 @@ Images are published to two registries:
 
 The `compose.yaml` pulls the pre-built image from Docker Hub by default. To use the GitHub Container Registry image instead, comment out the Docker Hub `image:` line and uncomment the GHCR line in `compose.yaml`.
 
+### Supported architectures
+
+Images are published as a multi-arch manifest for:
+
+- `linux/amd64` (x86_64)
+- `linux/arm64` (Raspberry Pi 4/5, AWS Graviton, Apple Silicon hosts)
+
+Docker automatically pulls the image matching your host's architecture.
+
+> ℹ️ A local `./build-docker.sh` build produces only your host's architecture (single-platform), not the multi-arch manifest.
+
 ### Building from source
 
 To build the image locally instead of pulling a pre-built one:
