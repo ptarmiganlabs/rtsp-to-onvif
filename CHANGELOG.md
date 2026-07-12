@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/ptarmiganlabs/rtsp-to-onvif/compare/rtsp-to-onvif-v1.1.0...rtsp-to-onvif-v1.2.0) (2026-07-12)
+
+
+### Features
+
+* Replace simple-node-logger with custom logger implementation ([a2b7e10](https://github.com/ptarmiganlabs/rtsp-to-onvif/commit/a2b7e10a13430584f6ce9d13a26611364e24b67b))
+
 ## [1.1.0](https://github.com/ptarmiganlabs/rtsp-to-onvif/compare/rtsp-to-onvif-v1.0.0...rtsp-to-onvif-v1.1.0) (2026-07-12)
 
 
