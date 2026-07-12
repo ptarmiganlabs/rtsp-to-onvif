@@ -1,6 +1,6 @@
 # 📸 Virtual Onvif Proxy (Fork)
 
-Simple docker container to add any RTSP stream into Unify Protect 5+
+Simple docker container to add any RTSP stream into UniFi Protect 5+
 
 Maintained by [mountaindude](https://github.com/mountaindude) ([Ptarmigan Labs](https://github.com/ptarmiganlabs)).
 
