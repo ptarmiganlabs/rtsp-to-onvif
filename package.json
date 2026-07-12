@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "RTSP to ONVIF Proxy Appliance",
   "main": "main.js",
+  "scripts": {
+    "test": "node --test",
+    "test:watch": "node --test --watch"
+  },
   "license": "MIT",
   "author": {
     "git" : "https://github.com/p10tyr/rtsp-to-onvif",

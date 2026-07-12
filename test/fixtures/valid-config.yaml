@@ -1,0 +1,30 @@
+onvif:
+  - name: TestCam
+    dev: eth0
+    mac: 1A:11:B0:AA:BB:CC
+    uuid: uuid-fixed
+    target:
+      hostname: 192.168.1.100
+      ports:
+        rtsp: 554
+        snapshot: 80
+    highQuality:
+      rtsp: /Streaming/Channels/101/
+      snapshot: /ISAPI/Streaming/Channels/101/picture
+      width: 1920
+      height: 1080
+      framerate: 15
+      bitrate: 4096
+      quality: 4
+    lowQuality:
+      rtsp: /Streaming/Channels/102/
+      snapshot: /ISAPI/Streaming/Channels/102/picture
+      width: 640
+      height: 480
+      framerate: 10
+      bitrate: 512
+      quality: 3
+    ports:
+      server: 8081
+      rtsp: 8554
+      snapshot: 8080
