@@ -5,7 +5,6 @@ const xml2js = require('xml2js');
 const { v1: uuidV1 } = require('uuid');
 const url = require('url');
 const fs = require('fs');
-const logger = require('simple-node-logger');
 
 const { getIp4FromMac } = require('./net-tools')
 

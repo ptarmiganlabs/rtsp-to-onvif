@@ -1,6 +1,8 @@
 const tcpProxy = require('node-tcp-proxy');
 const argparse = require('argparse');
-const logger = require('simple-node-logger').createSimpleLogger();
+const createLogger = require('./src/logger');
+const logger = createLogger();
+const pkg = require('./package.json');
 
 const OnvifServer = require('./src/onvif-server');
 const { readAndCheckConfig } = require('./src/config-tools');
@@ -15,6 +17,8 @@ parser.add_argument('config', { help: 'config filename to use', nargs: '?' });
 let args = parser.parse_args();
 
 if (args) {
+    logger.info(`rtsp-to-onvif v${pkg.version}`);
+
     const debugEnabled = process.env.DEBUG === '1' || process.env.DEBUG === 'true';
     if (debugEnabled) {
         logger.setLevel('trace');
