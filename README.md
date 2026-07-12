@@ -98,7 +98,7 @@ Output confirmed:
 
 The snapshot endpoint (`/axis-cgi/jpg/image.cgi`) was tested with various curl auth options (`-u`, `--digest`, `--anyauth`) but none returned a valid JPEG — the camera likely requires a specific digest auth handshake that curl couldn't negotiate.
 
-**This is not a problem for Unifi Protect.** The live RTSP stream works, and Protect shows the video stream.The snapshot path is still included in the config for completeness.
+**This is not a problem for UniFi Protect.** The live RTSP stream works, and Protect shows the video stream. The snapshot path is still included in the config for completeness.
 
 ### Working config.yaml
 
