@@ -78,7 +78,7 @@ Additional updates may be made in future releases as needed.
 
 ## My camera setup
 
-I'm using an **Axis Companion Bullet Mini LE** ([link to AXIS](https://help.axis.com/en-US/axis-companion-bullet-mini-le)) at `10.11.12.13` (made-up IP) with credentials `root` / `pass`. These are the default credentials for this camera model, change them if possible.
+I'm using an **Axis Companion Bullet Mini LE** ([link to AXIS](https://help.axis.com/en-US/axis-companion-bullet-mini-le)) at `10.11.12.13` (made-up IP) with credentials `<username>` / `<password>`. If your camera ships with default credentials, change them if possible.
 
 ### Finding the RTSP path
 
