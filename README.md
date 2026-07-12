@@ -46,7 +46,7 @@ Result: `npm audit` reports **0 vulnerabilities** (down from 8).
 
 ### Docker improvements
 
-- Pinned base image `node:22-alpine` → `node:22-alpine3.20` (reproducible builds)
+- Pinned base image `node:24-alpine` → `node:24-alpine3.24` (reproducible builds)
 - Added `HEALTHCHECK` with `curl`
 - Uncommented `restart: unless-stopped`
 

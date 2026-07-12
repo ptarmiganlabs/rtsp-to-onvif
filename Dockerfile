@@ -1,6 +1,6 @@
-FROM node:22-alpine3.20
+FROM node:24-alpine3.24
 
-RUN apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/v3.20/main dhclient curl
+RUN apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/v3.24/main dhclient curl
 ENV NODE_ENV=production
 WORKDIR /app
 
