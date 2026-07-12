@@ -379,7 +379,7 @@ Create a directory locally where you will keep your compose and config files.
 
 6. If you see the cameras show up in Protect then you can run docker in detached mode (or use Dockge, Portainer, etc...)
 
-  - `sudo docker compose up d`
+  - `sudo docker compose up -d`
 
 ## Config file
 
