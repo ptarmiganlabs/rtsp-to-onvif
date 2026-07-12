@@ -8,7 +8,7 @@ Maintained by [mountaindude](https://github.com/mountaindude) ([Ptarmigan Labs](
 
 ## Why this fork?
 
-This is a fork of [p10tyr/rtsp-to-onvif](https://github.com/p10tyr/rtsp-to-onvif) by Piotr Kula, which itself was forked from [daniela-hase/onvif-server](https://github.com/daniela-hase/onvif-server) by Daniela Hasenbring. The original repository had not been updated for several years.
+This is a fork of [p10tyr/rtsp-to-onvif](https://github.com/p10tyr/rtsp-to-onvif) by Piotr Kula, which itself was forked from [daniela-hase/onvif-server](https://github.com/daniela-hase/onvif-server) by Daniela Hasenbring. The original repository (Piotr's) had not been updated for several years.
 
 This fork was created to:
 
@@ -20,6 +20,15 @@ This fork was created to:
 - **Unit tests** (basic coverage for config-tools.js and onvif-server.js)
 - **Build and publish new Docker images** under `ptarmiganlabs/rtsp-to-onvif` (Docker Hub + GitHub Container Registry)
 - **Long term maintenance** (Make it easy to update dependencies, automatic version numbering, rebuild, and publish new images)
+
+## Security disclaimer
+
+This fork serves my own needs. I have a well isolated network and a small number of cameras.  
+The tool could certainly benefit from additional security hardening (CORS, better credentials handling, etc.), so please review the code and test it in a safe environment before using it in production or exposing it to the internet.
+
+Also, I have no way to test every camera model, and I cannot guarantee that this software will work for you.
+
+Use at your own risk.
 
 ## Security audit results
 
