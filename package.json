@@ -1,6 +1,6 @@
 {
   "name": "rtsp-to-onvif",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "RTSP to ONVIF Proxy Appliance",
   "main": "main.js",
   "scripts": {
@@ -12,17 +12,17 @@
     "node": ">=24"
   },
   "author": {
-    "git" : "https://github.com/p10tyr/rtsp-to-onvif",
+    "git": "https://github.com/p10tyr/rtsp-to-onvif",
     "name": "Piotr Kula",
     "email": "rtsp2onvif@kula.email"
   },
   "maintainer": {
-    "git" : "https://github.com/ptarmiganlabs/rtsp-to-onvif",
+    "git": "https://github.com/ptarmiganlabs/rtsp-to-onvif",
     "name": "Göran Sander",
     "url": "https://github.com/mountaindude"
   },
   "forked": {
-    "git" : "https://github.com/daniela-hase/onvif-server",
+    "git": "https://github.com/daniela-hase/onvif-server",
     "name": "Daniela Hasenbring",
     "email": "daniela@koshigaya.de"
   },
