@@ -17,12 +17,13 @@ This fork was created to:
 - **Fix code bugs** (process.exit, this.listen binding, shell injection hardening)
 - **Improve Docker setup** (pinned Alpine version, HEALTHCHECK, compose build directive)
 - **Fix CI** (dependabot config, workflow capitalization bug)
+- **Unit tests** (basic coverage for config-tools.js and onvif-server.js)
 - **Build and publish new Docker images** under `ptarmiganlabs/rtsp-to-onvif` (Docker Hub + GitHub Container Registry)
-- **Long term maintenance** (Make it easy to update dependencies, rebuild, and publish new images)
+- **Long term maintenance** (Make it easy to update dependencies, automatic version numbering, rebuild, and publish new images)
 
 ## Security audit results
 
-A thorough security audit was performed as part of this fork. The codebase is small (~670 lines of JavaScript) and was reviewed in its entirety.
+A security audit was performed as part of this fork. The codebase is small (~670 lines of JavaScript) and was reviewed in its entirety.
 
 **Verdict: Not malicious.** No outbound callbacks, no data exfiltration, no telemetry, no arbitrary code download/execution. All network operations are local (WS-Discovery multicast, TCP proxy, DHCP). All URLs are either ONVIF/W3C namespace constants or constructed from the user's own config file.
 
@@ -34,7 +35,7 @@ A thorough security audit was performed as part of this fork. The codebase is sm
 | `yaml` | 2.6.1 | 2.9.0 | Stack overflow fix (GHSA-48c2-rrv3-qjmp) |
 | `node-uuid` | 1.4.8 | replaced with `uuid` ^11.0.0 | Deprecated package; crypto-secure RNG instead of Math.random() |
 
-Result: `npm audit` reports **0 vulnerabilities** (down from 8).
+The above is the status as of July 2026. Dependencies and versions are subject to change in future releases. See the `package.json` file for the current versions.
 
 ### Code fixes
 
@@ -44,11 +45,17 @@ Result: `npm audit` reports **0 vulnerabilities** (down from 8).
 | `this.listen` loses context in HTTP server | `src/onvif-server.js` | Wrapped in arrow function to preserve `this` binding |
 | Shell injection via config values | `src/config-tools.js` | Replaced `execSync` string interpolation with `spawnSync` arg arrays |
 
+These are code changes done as part of the initial onboarding of the repository.
+Additional code updates may be made in future releases as needed.
+
 ### Docker improvements
 
 - Bumped and pinned base image to `node:24-alpine3.24` (reproducible builds)
 - Added `HEALTHCHECK` with `curl`
 - Uncommented `restart: unless-stopped`
+
+These are changes done as part of the initial onboarding of the repository.
+Additional updates may be made in future releases as needed.
 
 ### CI fixes
 
@@ -57,16 +64,19 @@ Result: `npm audit` reports **0 vulnerabilities** (down from 8).
 - Updated workflow to publish to both Docker Hub and GitHub Container Registry
 - Removed Docker Build Cloud config from upstream author
 
+These are changes done as part of the initial onboarding of the repository.
+Additional updates may be made in future releases as needed.
+
 ## My camera setup
 
-I'm using an **Axis Companion Bullet Mini LE** at `192.168.1.112` with credentials `root` / `pass`.
+I'm using an **Axis Companion Bullet Mini LE** ([link to AXIS](https://help.axis.com/en-US/axis-companion-bullet-mini-le)) at `10.11.12.13` (made-up IP) with credentials `root` / `pass`. These are the default credentials for this camera model, change them if possible.
 
 ### Finding the RTSP path
 
-The RTSP path was determined by testing with `ffprobe`:
+The RTSP path was found at [Home Assistant forums](https://community.home-assistant.io/t/axis-cameras-companion-line-solved-by-kimjohnson/405402/16) and tested with `ffprobe`:
 
 ```bash
-ffprobe "rtsp://root:pass@192.168.1.112/axis-media/media.amp?videocodec=h264&Axis-Orig-Sw=true"
+ffprobe "rtsp://root:pass@10.11.12.13/axis-media/media.amp?videocodec=h264&Axis-Orig-Sw=true"
 ```
 
 Output confirmed:
@@ -79,7 +89,7 @@ Output confirmed:
 
 The snapshot endpoint (`/axis-cgi/jpg/image.cgi`) was tested with various curl auth options (`-u`, `--digest`, `--anyauth`) but none returned a valid JPEG — the camera likely requires a specific digest auth handshake that curl couldn't negotiate.
 
-**This is not a problem for Unifi Protect.** The live RTSP stream works perfectly, and Protect shows the ONVIF logo placeholder where snapshots aren't available. The snapshot path is still included in the config for completeness.
+**This is not a problem for Unifi Protect.** The live RTSP stream works, and Protect shows the video stream.The snapshot path is still included in the config for completeness.
 
 ### Working config.yaml
 
@@ -90,7 +100,7 @@ onvif:
   - name: AxisCompanionBulletMiniLE
     dev: ens18
     target:
-      hostname: 192.168.1.112
+      hostname: 10.11.12.13
       ports:
         rtsp: 554
         snapshot: 80
@@ -258,7 +268,7 @@ echo 'net.ipv4.conf.all.arp_announce=2' | sudo tee -a /etc/sysctl.d/99-onvif.con
 |---|---|---|
 | `name` | Display name in ONVIF consumer (letters only, no spaces) | `AxisCompanionBulletMiniLE` |
 | `dev` | Host network interface for virtual IP (find via `ip addr`) | `ens18` |
-| `target.hostname` | Your camera's IP address | `192.168.1.112` |
+| `target.hostname` | Your camera's IP address | `10.11.12.13` |
 | `target.ports.rtsp` | Camera's RTSP port | `554` |
 | `target.ports.snapshot` | Camera's HTTP port for snapshots | `80` |
 | `highQuality.rtsp` | RTSP stream path | `/axis-media/media.amp?videocodec=h264` |
@@ -333,9 +343,9 @@ This repository has added features such as ...
 
 What can you adopt?
 
-- Adopt `IP camera --> RTSP (h264) --> Protect` 
+- Adopt `IP camera --> RTSP (h264) --> Protect`
 - Adopt `Raspberry Pi Camera --> uv4l --> RTSP (h254) -- Protect`
-- Adopt `Analog --> NVR --> RTSP (h264) --> Protect` 
+- Adopt `Analog --> NVR --> RTSP (h264) --> Protect`
 - Adopt `WebCam --> go2rtc --> RTSP (h264) --> Protect`
 - Adopt `... Anything RTSP --> Protect`
 
@@ -358,28 +368,28 @@ Create a directory locally where you will keep your compose and config files.
 
 1. Create a directory and change into it
 
-  - `mkdir rtsp-to-onvif` and `cd rtsp-to-onvif`
+- `mkdir rtsp-to-onvif` and `cd rtsp-to-onvif`
 
-2. Download the compose.yaml file
+1. Download the compose.yaml file
 
-  - `wget https://raw.githubusercontent.com/p10tyr/rtsp-to-onvif/refs/heads/release/compose.yaml`
+- `wget https://raw.githubusercontent.com/p10tyr/rtsp-to-onvif/refs/heads/release/compose.yaml`
 
-3. Download the config.example.yaml and clone it
+1. Download the config.example.yaml and clone it
 
-  - `wget https://raw.githubusercontent.com/p10tyr/rtsp-to-onvif/refs/heads/release/config.example.yaml`
-  - `cp config.example.yaml config.yaml`
+- `wget https://raw.githubusercontent.com/p10tyr/rtsp-to-onvif/refs/heads/release/config.example.yaml`
+- `cp config.example.yaml config.yaml`
 
-4. Edit and configure your cameras
+1. Edit and configure your cameras
 
-  - `nano config.yaml`
+- `nano config.yaml`
 
-5. Run compose in attached mode and check for any messages.
+1. Run compose in attached mode and check for any messages.
 
-  - `sudo docker compose up`
+- `sudo docker compose up`
 
-6. If you see the cameras show up in Protect then you can run docker in detached mode (or use Dockge, Portainer, etc...)
+1. If you see the cameras show up in Protect then you can run docker in detached mode (or use Dockge, Portainer, etc...)
 
-  - `sudo docker compose up -d`
+- `sudo docker compose up -d`
 
 ## Config file
 
@@ -388,10 +398,10 @@ Create a directory locally where you will keep your compose and config files.
 - UUID addresses will be added automatically
 - IPv4 will come from your DHCP server
 
-> ℹ️ **NOTE** 
-> 
+> ℹ️ **NOTE**
+>
 > This file will be overwritten during automatic configuration so comments will be lost.
-> 
+>
 > No username or passwords required here!
 
 ```yaml
@@ -422,16 +432,16 @@ onvif:
 ## Credits
 
 Thank you Daniela Hase for relasing the original script to the public!
-Original repository https://github.com/daniela-hase/onvif-server
+Original repository <https://github.com/daniela-hase/onvif-server>
 
-It has truly inspired me and gave me so many ideas! 
+It has truly inspired me and gave me so many ideas!
 That is why I had to fork your original repo so that I could develop this further to be a docker appliance.
 
 ## Unifi Protect
 
 Tested on Unifi Protect 5.0.40+
 
-Once the device shows up in protect, make sure the correct MAC address is assigned to the IP before adopting. 
+Once the device shows up in protect, make sure the correct MAC address is assigned to the IP before adopting.
 You can then adopt it and provide the username and password that are set on the real RTSP device.
 
 Known Limitations
@@ -460,7 +470,7 @@ Known Limitations
 Debug is enabled byu default in compose.yaml
 Once you have setup complete you can disable it.
 
-## compose.yaml file 
+## compose.yaml file
 
 You don't really have to change anything in this file.
 It has all the settings and permsions required to make it just work.
@@ -494,7 +504,7 @@ Virtual ONVIF 2
 
 ## Konwn problems
 
-Usuaully mulitple camera will just work out the box with the same server ports working for each virtual IP 
+Usuaully mulitple camera will just work out the box with the same server ports working for each virtual IP
 
 If you seem to have problems like
 
@@ -502,8 +512,8 @@ If you seem to have problems like
 - Port numbers in use error during startup
 - MAC shows the wrong IP
 
-Generally depends from OS to OS. 
-Eg in Ubuntu 22. 
+Generally depends from OS to OS.
+Eg in Ubuntu 22.
 
 You need to run these commands to allow virtual interface max advertising - but you still need a differnt port per virtual IP
 
@@ -554,16 +564,13 @@ If your RTSP url does not have a port it uses the default port 554.
 Your RTSP url may contain a username and password - those should NOT be included in the config file.
 Instead you will have to enter them in the software that you plan on consuming this Onvif camera in, for example during adoption in Unifi Protect.
 
-Next you need to figure out the resolution and framerate for the stream. If you don't know them, you can use VLC to open the RTSP stream and check the _Media Information_ (Window -> Media Information) for the _"Video Resolution"_ and _"Frame rate"_ on the _"Codec Details"_ page, and the _"Stream bitrate"_ on the _"Statistics"_ page. The bitrate will fluctuate quite a bit most likely, so just pick a number that is close to it (e.g. 1024, 2048, 4096 ..).
+Next you need to figure out the resolution and framerate for the stream. If you don't know them, you can use VLC to open the RTSP stream and check the *Media Information* (Window -> Media Information) for the *"Video Resolution"* and *"Frame rate"* on the *"Codec Details"* page, and the *"Stream bitrate"* on the *"Statistics"* page. The bitrate will fluctuate quite a bit most likely, so just pick a number that is close to it (e.g. 1024, 2048, 4096 ..).
 
 You can either randomly change a few numbers of the UUID, or use a UUIDv4 generator[^3].
 
-If you have a separate low-quality RTSP stream available, fill in the information for the `lowQuality` section above but this shows up as a seperate camera in unify. 
+If you have a separate low-quality RTSP stream available, fill in the information for the `lowQuality` section above but this shows up as a seperate camera in unify.
 
 > [!NOTE]
 > Since we don't provide a snapshot url you will onyl see the Onvif logo in certain places in Unifi Protect where it does not show the livestream.
 
-[^1]: [What is MacVLAN?](https://ipwithease.com/what-is-macvlan)
-[^2]: [Wikipedia: Locally Administered MAC Address](https://en.wikipedia.org/wiki/MAC_address#:~:text=Locally%20administered%20addresses%20are%20distinguished,how%20the%20address%20is%20administered.)
 [^3]: [UUIDv4 Generator](https://www.uuidgenerator.net/)
-[^4]: [Virtual Interfaces with different MAC addresses](https://serverfault.com/questions/682311/virtual-interfaces-with-different-mac-addresses)
