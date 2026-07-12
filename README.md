@@ -85,7 +85,7 @@ I'm using an **Axis Companion Bullet Mini LE** ([link to AXIS](https://help.axis
 The RTSP path was found at [Home Assistant forums](https://community.home-assistant.io/t/axis-cameras-companion-line-solved-by-kimjohnson/405402/16) and tested with `ffprobe`:
 
 ```bash
-ffprobe "rtsp://root:pass@10.11.12.13/axis-media/media.amp?videocodec=h264&Axis-Orig-Sw=true"
+ffprobe "rtsp://<username>:<password>@10.11.12.13/axis-media/media.amp?videocodec=h264&Axis-Orig-Sw=true"
 ```
 
 Output confirmed:
