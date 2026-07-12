@@ -350,7 +350,7 @@ docker run --network host --cap-add NET_ADMIN -v $(pwd)/config.yaml:/onvif.yaml 
 
 # 📸 Virtual Onvif Proxy
 
-Simple docker container to add any RTSP stream into Unify Protect 5+
+Simple docker container to add any RTSP stream into UniFi Protect 5+
 
 This is a continuation from the simple virtual ONVIF proxy that was originally released by Daniela Hase.
   
