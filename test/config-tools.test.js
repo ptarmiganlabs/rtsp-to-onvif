@@ -12,14 +12,21 @@ const fixture = path.join(__dirname, 'fixtures', 'valid-config.yaml');
 // so readAndCheckConfig uses our deterministic uuid/mac and controllable IP lookup.
 const netTools = require('../src/net-tools');
 let ipForMac = '192.168.1.50';
-netTools.getIp4FromMac = () => ipForMac;
-netTools.generateUUIDv4 = () => 'uuid-generated';
-netTools.generateNetworkMac = () => '1A:11:B0:22:22:22';
+
+const getIp4Mock = mock.method(netTools, 'getIp4FromMac', () => ipForMac);
+const uuidMock = mock.method(netTools, 'generateUUIDv4', () => 'uuid-generated');
+const macMock = mock.method(netTools, 'generateNetworkMac', () => '1A:11:B0:22:22:22');
 
 // Patch child_process.spawnSync (destructured by config-tools at load) so the
 // ip/dhclient calls stay hermetic and observable.
-const spawnSyncMock = mock.fn(() => ({ stdout: Buffer.from('') }));
-cp.spawnSync = spawnSyncMock;
+const spawnSyncMock = mock.method(cp, 'spawnSync', () => ({ stdout: Buffer.from('') }));
+
+test.after(() => {
+    getIp4Mock.mock.restore();
+    uuidMock.mock.restore();
+    macMock.mock.restore();
+    spawnSyncMock.mock.restore();
+});
 
 const { readAndCheckConfig } = require('../src/config-tools');
 
